@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using Color = Microsoft.Xna.Framework.Color;
@@ -10,14 +11,18 @@ namespace MonoGame_Topic_7___Collision
 {
     public class Game1 : Game
     {
+        Random generator = new Random();
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
         KeyboardState keyboardState;
         MouseState mouseState;
         Texture2D pacLeftTexture, pacRightTexture, pacUpTexture, pacDownTexture, pacCurrentTexture, exitTexture, barrierTexture, coinTexture;
-        Rectangle pacRect, barrierRect1, barrierRect2, exitRect, window;
+        Rectangle pacRect, exitRect, window;
         Vector2 pacSpeed;
         Rectangle coinRect; List<Rectangle> coins;
+        Rectangle barrierRect1, barrierRect2; List<Rectangle> barriers;
+
+
         public Game1()
         {
             _graphics = new GraphicsDeviceManager(this);
@@ -27,24 +32,22 @@ namespace MonoGame_Topic_7___Collision
 
         protected override void Initialize()
         {
-            
-            // TODO: Add your initialization logic here
 
-            base.Initialize();
-            pacSpeed = Vector2.Zero;
-            pacRect = new Rectangle(10, 10, 60, 60);
-            barrierRect1 = new Rectangle(0, 250, 350, 75);
-            barrierRect2 = new Rectangle(450, 250, 350, 75);
-            coins = new List<Rectangle>();
-            coins.Add(new Rectangle(400, 50, coinTexture.Width, coinTexture.Height)); 
-            coins.Add(new Rectangle(475, 50, coinTexture.Width, coinTexture.Height)); 
-            coins.Add(new Rectangle(200, 300, coinTexture.Width, coinTexture.Height)); 
-            coins.Add(new Rectangle(400, 300, coinTexture.Width, coinTexture.Height));
-            exitRect = new Rectangle(700, 400, 100, 100);
+            // TODO: Add your initialization logic here
             _graphics.PreferredBackBufferWidth = 800;
             _graphics.PreferredBackBufferHeight = 500;
             _graphics.ApplyChanges();
             window = new Rectangle(0, 0, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight);
+            base.Initialize();
+            pacSpeed = Vector2.Zero;
+            pacRect = new Rectangle(10, 10, 60, 60);
+            barriers = new List<Rectangle>();
+            barriers.Add(new Rectangle(0, 250, 350, 75));
+            barriers.Add(new Rectangle(450, 250, 350, 75));
+            coins = new List<Rectangle>();
+            coins.Add(new Rectangle(generator.Next(window.Width - coinTexture.Width), generator.Next(window.Height - coinTexture.Height), coinTexture.Width, coinTexture.Height));
+            exitRect = new Rectangle(700, 400, 100, 100);
+
         }
 
         protected override void LoadContent()
@@ -64,6 +67,7 @@ namespace MonoGame_Topic_7___Collision
         protected override void Update(GameTime gameTime)
         {
             keyboardState = Keyboard.GetState();
+            mouseState = Mouse.GetState();
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
             pacSpeed = Vector2.Zero;
@@ -97,8 +101,22 @@ namespace MonoGame_Topic_7___Collision
                 }
 
             }
-
-
+            if (exitRect.Contains(pacRect))
+            {
+                Exit();
+            }
+            if (mouseState.LeftButton == ButtonState.Pressed)
+            {
+                if (exitRect.Contains(mouseState.X, mouseState.Y))
+                {
+                    Exit();
+                }
+            }
+            foreach (Rectangle barrier in barriers)
+                if (pacRect.Intersects(barrier))
+                    pacRect.Offset(-pacSpeed);
+            if (!window.Contains(pacRect))
+                pacRect.Offset(-pacSpeed);
             // TODO: Add your update logic here
 
             base.Update(gameTime);
@@ -109,8 +127,8 @@ namespace MonoGame_Topic_7___Collision
             GraphicsDevice.Clear(Color.DarkViolet);
             _spriteBatch.Begin();
 
-            _spriteBatch.Draw(barrierTexture, barrierRect1, Color.White);
-            _spriteBatch.Draw(barrierTexture, barrierRect2, Color.White);
+            foreach (Rectangle barrier in barriers)
+                _spriteBatch.Draw(barrierTexture, barrier, Color.White);
             _spriteBatch.Draw(pacCurrentTexture, pacRect, Color.White);
             _spriteBatch.Draw(exitTexture, exitRect, Color.White);
             foreach (Rectangle coin in coins)
