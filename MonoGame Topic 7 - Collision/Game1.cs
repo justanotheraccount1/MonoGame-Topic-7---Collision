@@ -12,15 +12,17 @@ namespace MonoGame_Topic_7___Collision
     public class Game1 : Game
     {
         Random generator = new Random();
+        private int points;
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
         KeyboardState keyboardState;
         MouseState mouseState;
         Texture2D pacLeftTexture, pacRightTexture, pacUpTexture, pacDownTexture, pacCurrentTexture, exitTexture, barrierTexture, coinTexture;
         Rectangle pacRect, exitRect, window;
-        Vector2 pacSpeed;
+        Vector2 pacSpeed, fontLocation;
         Rectangle coinRect; List<Rectangle> coins;
         Rectangle barrierRect1, barrierRect2; List<Rectangle> barriers;
+        SpriteFont font;
 
 
         public Game1()
@@ -45,9 +47,15 @@ namespace MonoGame_Topic_7___Collision
             barriers.Add(new Rectangle(0, 250, 350, 75));
             barriers.Add(new Rectangle(450, 250, 350, 75));
             coins = new List<Rectangle>();
-            coins.Add(new Rectangle(generator.Next(window.Width - coinTexture.Width), generator.Next(window.Height - coinTexture.Height), coinTexture.Width, coinTexture.Height));
+            for (int i = 0; i < generator.Next(50);  i++)
+            {
+                coins.Add(new Rectangle(generator.Next(window.Width - coinTexture.Width), generator.Next(window.Height - coinTexture.Height), coinTexture.Width, coinTexture.Height));
+            }
+          
             exitRect = new Rectangle(700, 400, 100, 100);
-
+            points = 0;
+            fontLocation = new Vector2(0, 0);
+            
         }
 
         protected override void LoadContent()
@@ -61,6 +69,7 @@ namespace MonoGame_Topic_7___Collision
             barrierTexture = Content.Load<Texture2D>("rock_barrier");
             coinTexture = Content.Load<Texture2D>("coin");
             exitTexture = Content.Load<Texture2D>("hobbit_door");
+            font = Content.Load<SpriteFont>("Font");
             // TODO: use this.Content to load your game content here
         }
 
@@ -98,6 +107,7 @@ namespace MonoGame_Topic_7___Collision
                 {
                     coins.RemoveAt(i);
                     i--;
+                    points += 1;
                 }
 
             }
@@ -124,7 +134,7 @@ namespace MonoGame_Topic_7___Collision
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.DarkViolet);
+            GraphicsDevice.Clear(Color.Black);
             _spriteBatch.Begin();
 
             foreach (Rectangle barrier in barriers)
@@ -133,7 +143,7 @@ namespace MonoGame_Topic_7___Collision
             _spriteBatch.Draw(exitTexture, exitRect, Color.White);
             foreach (Rectangle coin in coins)
                 _spriteBatch.Draw(coinTexture, coin, Color.White);
-
+            _spriteBatch.DrawString(font, "Points: " + points, fontLocation, Color.White);
             // TODO: Add your drawing code here
             _spriteBatch.End();
             base.Draw(gameTime);
